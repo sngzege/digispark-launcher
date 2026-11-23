@@ -31,11 +31,18 @@ run_op() {
 }
 
 main() {
+  # curl|bash ile çalışınca stdin borudur; girdiyi kontrol terminalinden oku.
+  # tty'yi bir kez fd 3'e aç; her okuma sıradaki satırı alsın (dosyada da akışta da doğru).
+  local TTY="${TTY:-/dev/tty}"
   echo "== Digispark başlatıcı =="
   run_op 0 || echo "(işlem 0 çalıştırılamadı)"
+  if ! exec 3<"$TTY" 2>/dev/null; then
+    echo "girdi alınamıyor ($TTY yok); döngü atlanıyor." >&2
+    return 0
+  fi
   while true; do
     printf '\nİşlem seç [1-2-3, q=çıkış]: '
-    read -r input || break
+    read -r input <&3 || break
     choice="$(read_choice "$input")"
     case "$choice" in
       quit) echo "çıkılıyor."; break ;;
@@ -43,6 +50,7 @@ main() {
       *)    run_op "$choice" || echo "(işlem $choice çalıştırılamadı)" ;;
     esac
   done
+  exec 3<&-
 }
 
 # Doğrudan çalıştırıldığında döngüyü başlat; source edildiğinde (test) başlatma.

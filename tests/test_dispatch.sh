@@ -37,5 +37,22 @@ fetch() { return 1; }
 run_op 1 >/dev/null 2>&1; rc=$?
 assert_eq "$rc" "1"         "run_op: fetch başarısız → 1 döner"
 
+# --- main: girdiyi borudan DEĞİL $TTY'den okur (curl|bash senaryosu) ---
+# fetch, çekilen yolu yankılayan bir betik döndürür; böylece hangi op'un
+# çalıştığını görebiliriz. Girdi $TTY dosyasından gelir, stdin'den değil.
+fetch() { echo "echo RAN:$1"; }
+ttyfile="$(mktemp)"; printf '2\nq\n' > "$ttyfile"
+# stdin'e kasten çöp koy; doğru uygulama bunu YOK saymalı ($TTY'den okumalı).
+out="$(TTY="$ttyfile" main <<<'9')"
+rm -f "$ttyfile"
+case "$out" in
+  *RAN:ops/0.sh*) assert_eq "ok" "ok" "main: ops/0 otomatik çalışır" ;;
+  *) assert_eq "$out" "RAN:ops/0.sh (içerir)" "main: ops/0 otomatik çalışır" ;;
+esac
+case "$out" in
+  *RAN:ops/2.sh*) assert_eq "ok" "ok" "main: \$TTY'den '2' okunup ops/2 çalışır" ;;
+  *) assert_eq "$out" "RAN:ops/2.sh (içerir)" "main: \$TTY'den '2' okunup ops/2 çalışır" ;;
+esac
+
 echo "---"
 if [ "$fails" -eq 0 ]; then echo "TÜM TESTLER GEÇTİ"; else echo "$fails test başarısız"; exit 1; fi
