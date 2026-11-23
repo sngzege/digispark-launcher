@@ -36,7 +36,12 @@ penceresi ~5 sn). udev kuralı (`16d0:0753`) kurulu olduğundan sudo gerekmez.
 3. Windows'ta Win+R → PowerShell ile `dispatch.ps1`; Linux'ta odaklı terminale
    `dispatch.sh`.
 
-## Klavye düzeni uyarısı
+## Klavye düzeni
 
-Firmware **US** tarama-kodu tablosuyla yazar. Hedef Windows **TR** düzendeyse
-`: / . | "` yanlış çıkabilir. TR düzende kullanılacaksa TR tablosu eklenmeli.
+- **Windows (asıl hedef):** özel karakterler (`: / . - | "`) **Alt+numpad**
+  kodlarıyla yazılır — bu düzenden **bağımsızdır**, TR-Q dahil çalışır.
+  Harf/rakam/boşluk TR-Q'da US ile aynı tuşlarda olduğundan normal yazılır.
+  Alt-kod için NumLock açık olmalı; firmware gerekirse otomatik açar.
+- **Linux:** şu an US tablosuyla yazar. TR düzenli bir Linux **masaüstü** hedefi
+  olursa özel karakter tuşları donanımda ölçülüp bir TR haritası eklenmeli.
+  (Ekransız sunucuda zaten fiziksel konsola yazar; birincil kullanım Windows.)
