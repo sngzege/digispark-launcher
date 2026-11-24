@@ -147,6 +147,9 @@ if ($isAdmin) {
 
 Start-Sleep -Seconds 2
 $after = (Get-PSDrive C).Free
-$freed = [math]::Max(0, $after - $before)
+# [int64] ile hesapla: Get-PSDrive Free UInt64 dondurur; [math]::Max(0, UInt64) asiri
+# yukleme hatasi verip (SilentlyContinue ile gizlenerek) sonucu bos birakiyordu.
+$freed = [int64]$after - [int64]$before
+if ($freed -lt 0) { $freed = 0 }
 Write-Host ("Bitis bos alan (C:): {0}" -f (Format-GB $after))
 Write-Host ("ACILAN YER: {0}" -f (Format-GB $freed)) -ForegroundColor Green
