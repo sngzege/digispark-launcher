@@ -1,1 +1,2 @@
-echo "op çalıştı"
+#!/usr/bin/env bash
+echo "op ran"

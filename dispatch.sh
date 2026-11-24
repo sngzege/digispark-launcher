@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
-# Digispark başlatıcı — Linux dağıtıcı.
-# Kart bunu çeker ve çalıştırır:
+# Digispark launcher - Linux dispatcher.
+# Card fetches and runs this:
 #   curl -fsSL https://raw.githubusercontent.com/sngzege/digispark-launcher/main/dispatch.sh | bash
-#
-# Önce ops/0 çalışır, sonra 1-2-3 döngüsü (q = çıkış).
-# İşlem mantığı ops/<N>.sh içinde; buraya sır YAZMA (depo public).
+# Runs ops/0, then an interactive named menu (q = quit). Op logic lives in
+# ops/<N>.sh. Never put secrets here (public repo).
 
 BASE="${BASE:-https://raw.githubusercontent.com/sngzege/digispark-launcher/main/}"
 export BASE
 
-# Verilen göreli yolu çeker ve stdout'a yazar. Testte ezilir.
 fetch() { curl -fsSL "${BASE}$1"; }
 
-# .env içindeki KEY=VALUE satırlarını güvenli şekilde ortama aktarır.
-# Yalnız geçerli kabuk değişken adlarını (harf/alt çizgi ile başlayan) kabul
-# eder; yorum (#) ve boş satırlar atlanır. Rastgele kod ÇALIŞTIRMAZ.
+# Export KEY=VALUE lines from .env into the environment. Ignores comments/blank
+# lines and anything that is not a valid shell variable name. Runs no code.
 load_env() {
   local line
   while IFS= read -r line; do
@@ -25,7 +22,7 @@ load_env() {
   done <<< "$1"
 }
 
-# .env'den GH_OWNER/GH_REPO/GH_BRANCH geldiyse BASE'i onlardan yeniden kurar.
+# Rebuild BASE from GH_OWNER/GH_REPO/GH_BRANCH when all are set.
 apply_env_base() {
   if [ -n "${GH_OWNER:-}" ] && [ -n "${GH_REPO:-}" ] && [ -n "${GH_BRANCH:-}" ]; then
     BASE="https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/"
@@ -33,54 +30,77 @@ apply_env_base() {
   fi
 }
 
-# Girdiyi doğrular: 1|2|3 → aynısı, q → "quit", aksi → boş.
+# Parse an ops/menu manifest ('N=Label' lines) into 'N<TAB>Label' rows.
+parse_menu() {
+  local line
+  while IFS= read -r line; do
+    [[ "$line" =~ ^[[:space:]]*(#.*)?$ ]] && continue
+    if [[ "$line" =~ ^([1-9])=(.*)$ ]]; then
+      printf '%s\t%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+    fi
+  done <<< "$1"
+}
+
+# Render a manifest as a human menu: "  N - Label".
+render_menu() {
+  local n label
+  while IFS=$'\t' read -r n label; do
+    [ -n "$n" ] && printf '  %s - %s\n' "$n" "$label"
+  done <<< "$(parse_menu "$1")"
+}
+
+# Validate choice: 1-4 -> itself, q -> quit, anything else -> empty.
 read_choice() {
   case "$1" in
-    1|2|3) printf '%s' "$1" ;;
-    q|Q)   printf 'quit' ;;
-    *)     printf '' ;;
+    1|2|3|4) printf '%s' "$1" ;;
+    q|Q)     printf 'quit' ;;
+    *)       printf '' ;;
   esac
 }
 
-# ops/<N>.sh'i çekip çalıştırır. Çekilemezse hata yazıp 1 döner (çökme yok).
+# Fetch and run ops/<N>.sh. On fetch failure, print an error and return 1.
 run_op() {
   local n="$1" script
   if ! script="$(fetch "ops/${n}.sh")"; then
-    echo "hata: ops/${n}.sh çekilemedi (ağ/erişim?)" >&2
+    echo "error: could not fetch ops/${n}.sh (network/access?)" >&2
     return 1
   fi
   bash -c "$script"
 }
 
 main() {
-  # curl|bash ile çalışınca stdin borudur; girdiyi kontrol terminalinden oku.
-  # tty'yi bir kez fd 3'e aç; her okuma sıradaki satırı alsın (dosyada da akışta da doğru).
   local TTY="${TTY:-/dev/tty}"
-  echo "== Digispark başlatıcı =="
+  echo "== Digispark launcher =="
   local envtext
   if envtext="$(fetch ".env" 2>/dev/null)"; then
     load_env "$envtext"
     apply_env_base
   fi
-  run_op 0 || echo "(işlem 0 çalıştırılamadı)"
+  run_op 0 || echo "(op 0 failed)"
+
+  local menu
+  menu="$(fetch "ops/menu" 2>/dev/null)"
+
   if ! exec 3<"$TTY" 2>/dev/null; then
-    echo "girdi alınamıyor ($TTY yok); döngü atlanıyor." >&2
+    echo "no input available ($TTY missing); skipping menu." >&2
     return 0
   fi
   while true; do
-    printf '\nİşlem seç [1-2-3, q=çıkış]: '
+    echo
+    echo "Select an operation:"
+    if [ -n "$menu" ]; then render_menu "$menu"; else printf '  1  2  3  4\n'; fi
+    printf '  q - Quit\n> '
     read -r input <&3 || break
     choice="$(read_choice "$input")"
     case "$choice" in
-      quit) echo "çıkılıyor."; break ;;
-      "")   echo "geçersiz girdi; 1, 2, 3 veya q." ;;
-      *)    run_op "$choice" || echo "(işlem $choice çalıştırılamadı)" ;;
+      quit) echo "bye."; break ;;
+      "")   echo "invalid input; choose a listed number or q." ;;
+      *)    run_op "$choice" || echo "(op $choice failed)" ;;
     esac
   done
   exec 3<&-
 }
 
-# Doğrudan çalıştırıldığında döngüyü başlat; source edildiğinde (test) başlatma.
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
   main
 fi

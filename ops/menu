@@ -1,0 +1,5 @@
+# Launcher menu labels (N=Label). Dispatcher fetches this at runtime, so new
+# operations are named here in one place. Lines starting with # are ignored.
+1=Disk Cleaner
+2=System Health Report
+3=Log / Diagnostics
