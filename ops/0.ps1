@@ -1,2 +1,3 @@
-# otomatik başlangıç işlemi (0) — yer tutucu. Geliştirmeyi buraya ekle.
-Write-Host "[Windows] otomatik başlangıç işlemi (0) çalıştı"
+# ops/0 - Runs automatically on connect. Welcome banner.
+Write-Host "== Digispark IT Toolkit ==" -ForegroundColor Green
+Write-Host "Windows plug-and-run helper. Pick an operation from the menu below."
