@@ -82,8 +82,9 @@ static void altCode(unsigned char ascii) {
 static void typeWin(const char* s) {
   for (const char* p = s; *p; p++) {
     char c = *p;
-    bool safe = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                (c >= '0' && c <= '9') || c == ' ';
+    // 'i'/'I' HARIC: TR-Q'da US'deki 'i' tusu noktasiz 'ı' uretir. Bu ikisi de Alt-kodla yazilir.
+    bool safe = ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                 (c >= '0' && c <= '9') || c == ' ') && c != 'i' && c != 'I';
     if (safe) {
       DigiKeyboard.write((uint8_t)c);
     } else {
