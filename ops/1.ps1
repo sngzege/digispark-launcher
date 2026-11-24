@@ -27,6 +27,7 @@ if (-not $isAdmin) {
     return
   } catch {
     Write-Host "Yonetici izni alinamadi; yalnizca kullanici duzeyi temizlik yapilacak." -ForegroundColor Yellow
+    Write-Host ("  Neden: {0}" -f $_.Exception.Message) -ForegroundColor Yellow
   }
 }
 
