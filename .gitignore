@@ -2,3 +2,8 @@ build/
 *.o
 *.lst
 *.hex
+
+# Local/secret config — never commit
+.env
+secrets.env
+.env.local
