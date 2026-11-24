@@ -54,5 +54,18 @@ case "$out" in
   *) assert_eq "$out" "RAN:ops/2.sh (içerir)" "main: \$TTY'den '2' okunup ops/2 çalışır" ;;
 esac
 
+# --- load_env: .env içeriğini güvenli şekilde export eder ---
+unset TEST_KEY_X TEST_KEY_Y BAD 2>/dev/null
+load_env $'# yorum satiri\n\nTEST_KEY_X=deger1\nBAD KEY=nope\nTEST_KEY_Y=deger2'
+assert_eq "${TEST_KEY_X:-}" "deger1" "load_env: gecerli KEY=VALUE export edilir"
+assert_eq "${TEST_KEY_Y:-}" "deger2" "load_env: ikinci gecerli satir da export edilir"
+assert_eq "${BAD:-}" ""        "load_env: bosluklu/gecersiz anahtar atlanir"
+
+# --- apply_env_base: GH_OWNER/GH_REPO/GH_BRANCH varsa BASE'i yeniden kurar ---
+GH_OWNER=foo; GH_REPO=bar; GH_BRANCH=dev
+apply_env_base
+assert_eq "$BASE" "https://raw.githubusercontent.com/foo/bar/dev/" "apply_env_base: GH_* degerlerinden BASE kurulur"
+unset GH_OWNER GH_REPO GH_BRANCH
+
 echo "---"
 if [ "$fails" -eq 0 ]; then echo "TÜM TESTLER GEÇTİ"; else echo "$fails test başarısız"; exit 1; fi

@@ -15,6 +15,7 @@ dokunmadan.
 ## Yapı
 
 ```
+.env           TÜM betiklerin okuduğu ortak ayarlar (bkz. aşağıda)
 dispatch.ps1   Windows dağıtıcı (PowerShell)
 dispatch.sh    Linux dağıtıcı (bash)
 ops/0.*        takılınca otomatik çalışan işlem
@@ -26,6 +27,24 @@ tests/         dispatch.sh birim testleri
 
 - Bir işlemi değiştirmek: ilgili `ops/<N>.sh` ve/veya `ops/<N>.ps1` dosyasını düzenle, `main`'e it. Kart her çalıştığında güncel sürümü çeker.
 - Windows için `.ps1`, Linux için `.sh` sürümünü birlikte güncel tut.
+
+## Ortak ayarlar (`.env`)
+
+Dağıtıcılar her çalıştığında depodan `.env` dosyasını çekip `KEY=VALUE`
+satırlarını ortam değişkeni olarak yükler (rastgele kod çalıştırmaz, yalnız
+`AD=deger` biçimini ayrıştırır). Betikler bunu şöyle okur:
+
+- bash: `$GH_OWNER` (veya genel olarak `${AD:-}`)
+- PowerShell: `$env:GH_OWNER`
+
+Tüm betiklerde tekrar eden bir girdi (repo adı, host adı, port, varsayılan
+kullanıcı adı vb.) olduğunda onu koda gömmek yerine `.env`'e ekle; tek yerden
+değişsin. **İstisna:** kartın firmware'i (`firmware/launcher.ino`) derlenmiş
+kod olduğundan `.env`'i okuyamaz; ilk indirme adresi orada sabit kalır —
+`.env` yalnız dispatch ve ops betikleri içindir.
+
+**GÜVENLİK:** `.env` bu public depoda duruyor. Buraya **asla** parola, token,
+API anahtarı veya başka bir sır yazılmaz — yalnız sır olmayan yapılandırma.
 
 ## Testler
 

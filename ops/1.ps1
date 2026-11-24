@@ -13,7 +13,10 @@
 $ErrorActionPreference = 'SilentlyContinue'
 
 # --- Yönetici değilse UAC ile kendini yeniden başlat (derin temizlik için) ---
-$self = 'https://raw.githubusercontent.com/sngzege/digispark-launcher/main/ops/1.ps1'
+# $env:BASE, dispatch.ps1 tarafından (ve .env'den) set edilir; yoksa (ops/1.ps1
+# tek başına çalıştırılırsa) sabit bir yedek adrese düşer.
+$base = if ($env:BASE) { $env:BASE } else { 'https://raw.githubusercontent.com/sngzege/digispark-launcher/main/' }
+$self = $base + 'ops/1.ps1'
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
           ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
