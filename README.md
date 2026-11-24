@@ -28,7 +28,7 @@ ops/0.ps1      Operation that runs automatically on connect
 ops/1.ps1      Disk Cleaner
 ops/2.ps1      System Health Report (read-only)
 ops/3.ps1      Log / Diagnostics
-ops/4.ps1      Reserved (placeholder)
+ops/4.ps1      Network Map (read-only)
 tests/         dispatch.sh unit tests
 firmware/      Card firmware (flashed once; untouched during script dev)
 ```
