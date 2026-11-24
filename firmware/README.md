@@ -15,10 +15,14 @@ içinde — bu firmware'e normalde bir daha dokunulmaz.
 ## Kurulum (sunucuda bir kez)
 
 ```bash
-arduino-cli core install digistump:avr   # index: digistump GitHub aynası
+arduino-cli core install digistump:avr    # derleme (eski gcc, V-USB uyumlu)
+arduino-cli core install ATTinyCore:avr   # yükleyici micronucleus 2.5 için
+sudo dnf install -y libusb-compat-0.1     # micronucleus'un aradığı libusb-0.1
 ```
-> Not: ATTinyCore DEĞİL, **digistump:avr** çekirdeği kullanılır (eski gcc, bu
-> V-USB kütüphanesiyle uyumlu). FQBN: `digistump:avr:digispark-tiny`.
+> Not: Derleme **digistump:avr** ile (FQBN `digistump:avr:digispark-tiny`),
+> ancak YÜKLEME ATTinyCore'un **micronucleus 2.5**'i ile yapılır; bu kartın
+> bootloader'ı yeni (2.2) olduğundan digistump'ın eski yükleyicisi (2.0a4)
+> tanımıyor. `flash.sh` bunu otomatik halleder.
 
 ## Yükleme
 
